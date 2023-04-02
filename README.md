@@ -67,37 +67,31 @@ end
 
 Figuring out where and how often to call `check_timeout!` in your code can be ugly and difficult. The best place to do this is right before your code calls any external service. This gem comes with tools to hook into these areas of code in several popular Ruby database and HTTP libraries. This is opt-in behavior so you can control which libraries to hook into. Once you've hooked into a library, though, any call to that library will check the current timeout block and raise a `RequestTimeout::TimeoutError` before making calls to the resource if necessary.
 
-The easiest thing to do is to automatically setup all the bundled hooks when initializing your application. This will detect which libraries are present and hook into them.
+You can enable whichever bundled hooks you want with the `add_timeout!` method. You should be strategic about which hooks to add to core libraries. For instance, in a Rails application, adding hooks to ActiveRecord should be good enough.
 
 ```ruby
-RequestTimeout::Hooks.auto_setup!
+RequestTimeout::Hooks::ActiveRecord.add_timeout!
+RequestTimeout::Hooks::Redis.add_timeout!
+RequestTimeout::Hooks::Dalli.add_timeout!
+RequestTimeout::Hooks::Bunny.add_timeout!
+RequestTimeout::Hooks::Cassandra.add_timeout!
+RequestTimeout::Hooks::NetHTTP.add_timeout!
+RequestTimeout::Hooks::HTTP.add_timeout!
+RequestTimeout::Hooks::HTTPClient.add_timeout!
+RequestTimeout::Hooks::Curb.add_timeout!
+RequestTimeout::Hooks::Excon.add_timeout!
+RequestTimeout::Hooks::Typhoeus.add_timeout!
 ```
 
 In a Rails application you should wrap this with `ActiveSupport.on_load` to ensure ActiveRecord is initialized first.
 
 ```ruby
 ActiveSupport.on_load(:active_record) do
-  RequestTimeout::Hooks.auto_setup!
+  RequestTimeout::Hooks::ActiveRecord.add_timeout!
 end
 ```
 
-You can also add timeout for just specific libraries.
-
-```ruby
-RequestTimeout::Hooks::ActiveRecord.new.add_timeout!
-RequestTimeout::Hooks::Redis.new.add_timeout!
-RequestTimeout::Hooks::Dalli.new.add_timeout!
-RequestTimeout::Hooks::Bunny.new.add_timeout!
-RequestTimeout::Hooks::Cassandra.new.add_timeout!
-RequestTimeout::Hooks::NetHTTP.new.add_timeout!
-RequestTimeout::Hooks::HTTP.new.add_timeout!
-RequestTimeout::Hooks::HTTPClient.new.add_timeout!
-RequestTimeout::Hooks::Curb.new.add_timeout!
-RequestTimeout::Hooks::Excon.new.add_timeout!
-RequestTimeout::Hooks::Typhoeus.new.add_timeout!
-```
-
-You can easily hook into other libraries as well. You need to identify the class and methods where you want to add the timeout hooks and then call `add_timeout!`.
+You can easily hook into other classes as well. You need to identify the class and methods where you want to add the timeout hooks and then call `add_timeout!`.
 
 ```ruby
 # Add a timeout check to the MyDriver#make_request method.

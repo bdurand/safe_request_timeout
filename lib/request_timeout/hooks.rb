@@ -5,21 +5,6 @@ module RequestTimeout
   # timeouts to be automatically checked before making requests to external services.
   module Hooks
     class << self
-      # Apply all the bundled hooks.
-      def auto_setup!
-        ActiveRecord.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Bunny.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Cassandra.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Curb.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Dalli.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Excon.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        HTTPClient.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        HTTP.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        NetHTTP.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Redis.new.tap { |instance| instance.add_timeout! if instance.valid? }
-        Typhoeus.new.tap { |instance| instance.add_timeout! if instance.valid? }
-      end
-
       # Hooks into a class by surrounding specified instance methods with timeout checks.
       def add_timeout!(klass, methods, module_name = nil)
         # Create a module that will be prepended to the specified class.

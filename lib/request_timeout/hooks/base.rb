@@ -12,6 +12,13 @@ module RequestTimeout
       # List of instance methods to hooks into.
       attr_accessor :methods
 
+      class << self
+        # Add the timeout hooks to the specified for this class.
+        def add_timeout!
+          new.add_timeout!
+        end
+      end
+
       # Inject timeout code into the specified class' methods.
       def add_timeout!
         raise ArgumentError.new("klass not specified") unless klass

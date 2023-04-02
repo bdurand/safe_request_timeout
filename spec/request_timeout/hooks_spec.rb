@@ -43,10 +43,4 @@ describe RequestTimeout::Hooks do
       end
     end
   end
-
-  describe "auto_setup!" do
-    it "should not raise any errors" do
-      expect { RequestTimeout::Hooks.auto_setup! }.to_not raise_error
-    end
-  end
 end
