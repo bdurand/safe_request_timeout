@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 module RequestTimeout
-  # Code for instrumenting other classes with capture blocks to capture how long
-  # calling specified methods take.
+  # Hooks into other classes from other libraries with timeout blocks. This allows
+  # timeouts to be automatically checked before making requests to external services.
   module Hooks
     class << self
       # Apply all the bundled instrumenters.
