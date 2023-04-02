@@ -5,7 +5,6 @@ module RequestTimeout
     class Excon < Base
       def initialize
         @klass = ::Excon::Connection if defined?(::Excon::Connection)
-        @name = :http
         @methods = [:request]
       end
     end

@@ -5,7 +5,6 @@ module RequestTimeout
     class HTTPClient < Base
       def initialize
         @klass = ::HTTPClient if defined?(::HTTPClient)
-        @name = :http
         @methods = [:do_get_block]
       end
     end

@@ -5,7 +5,7 @@ module RequestTimeout
   # timeouts to be automatically checked before making requests to external services.
   module Hooks
     class << self
-      # Apply all the bundled instrumenters.
+      # Apply all the bundled hooks.
       def auto_setup!
         ActiveRecord.new.tap { |instance| instance.add_timeout! if instance.valid? }
         Bunny.new.tap { |instance| instance.add_timeout! if instance.valid? }
@@ -28,8 +28,9 @@ module RequestTimeout
           camelized_name = "#{camelized_name[0].upcase}#{camelized_name[1, camelized_name.length]}"
           module_name = "#{klass.name.split("::").join}#{camelized_name}Hooks"
         end
+
         if const_defined?(module_name)
-          raise ArgumentError.new("#{name} has alrady been hooksed into in #{klass.name}")
+          raise ArgumentError.new("Cannot create duplicate #{module_name} for hooking #{name} into #{klass.name}")
         end
 
         # The method of overriding kwargs changed in ruby 2.7

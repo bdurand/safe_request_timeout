@@ -5,7 +5,6 @@ module RequestTimeout
     class Bunny < Base
       def initialize
         @klass = ::Bunny::Channel if defined?(::Bunny::Channel)
-        @name = :rabbitmq
         @methods = [
           :basic_get,
           :basic_publish,

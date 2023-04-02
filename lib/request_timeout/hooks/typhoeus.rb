@@ -5,7 +5,6 @@ module RequestTimeout
     class Typhoeus < Base
       def initialize
         @klass = ::Typhoeus::Hydra if defined?(::Typhoeus::Hydra)
-        @name = :http
         @methods = [:run]
       end
     end

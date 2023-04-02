@@ -20,7 +20,7 @@ module RequestTimeout
         Hooks.add_timeout!(klass, methods, module_name)
       end
 
-      # Determine if the instrumentation definition is valid.
+      # Determine if the hook definition is valid.
       def valid?
         return false if klass.nil?
         all_methods = klass.public_instance_methods + klass.protected_instance_methods + klass.private_instance_methods

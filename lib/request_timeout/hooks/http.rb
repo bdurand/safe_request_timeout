@@ -5,7 +5,6 @@ module RequestTimeout
     class HTTP < Base
       def initialize
         @klass = ::HTTP::Client if defined?(::HTTP::Client)
-        @name = :http
         @methods = [:perform]
       end
     end

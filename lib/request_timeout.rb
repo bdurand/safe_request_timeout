@@ -2,7 +2,21 @@
 
 require "timeout"
 
-# TODO
+# This module adds the capability to add a general timeout to any block of code.
+# Unlike the Timeout module, an error is not raised to indicate a timeout.
+# Instead, the `timed_out?` method can be used to check if the block of code
+# has taken longer than the specified duration so the application can take
+# the appropriate action.
+#
+# This is a safer alternative to the Timeout module because it does not fork new
+# threads or risk raising errors from unexpected places.
+#
+# @example
+#   RequestTimeout.timeout(5) do
+#     # calling check_timeout! will raise an error if the block has taken
+#     # longer than 5 seconds to execute.
+#     RequestTimeout.check_timeout!
+#   end
 module RequestTimeout
   class TimeoutError < ::Timeout::Error
   end
