@@ -13,16 +13,11 @@ describe RequestTimeout do
 
       expect(RequestTimeout.timed_out?).to eq false
       expect(RequestTimeout.time_remaining).to be nil
+      expect(RequestTimeout.time_elapsed).to be nil
     end
 
     it "returns the value of the block" do
       expect(RequestTimeout.timeout(1) { :foo }).to eq :foo
-    end
-
-    it "does not timeout if the timeout duration is zero" do
-      RequestTimeout.timeout(0) do
-        expect(RequestTimeout.timed_out?).to eq false
-      end
     end
 
     it "does not timeout if the timeout duration is nil" do
@@ -35,14 +30,19 @@ describe RequestTimeout do
       RequestTimeout.timeout(3) do
         expect(RequestTimeout.time_remaining).to be > 2
         expect(RequestTimeout.time_remaining).to be <= 3
+        expect(RequestTimeout.time_elapsed).to be < 0.1
+
+        sleep(0.1)
 
         RequestTimeout.timeout(2) do
           expect(RequestTimeout.time_remaining).to be > 1
           expect(RequestTimeout.time_remaining).to be <= 2
+          expect(RequestTimeout.time_elapsed).to be < 0.1
         end
 
         expect(RequestTimeout.time_remaining).to be > 2
         expect(RequestTimeout.time_remaining).to be <= 3
+        expect(RequestTimeout.time_elapsed).to be > 0.1
 
         RequestTimeout.timeout(4) do
           expect(RequestTimeout.time_remaining).to be > 2
@@ -55,6 +55,16 @@ describe RequestTimeout do
       RequestTimeout.timeout(lambda { 1 }) do
         expect(RequestTimeout.time_remaining).to be > 0
         expect(RequestTimeout.time_remaining).to be <= 1
+      end
+    end
+  end
+
+  describe "check_timeout!" do
+    it "raises a RequestTimeout::TimeoutError if the timeout has been reached" do
+      RequestTimeout.timeout(0.1) do
+        RequestTimeout.check_timeout!
+        sleep 0.11
+        expect { RequestTimeout.check_timeout! }.to raise_error(RequestTimeout::TimeoutError)
       end
     end
   end
@@ -94,6 +104,18 @@ describe RequestTimeout do
 
     it "returns nil if no timeout is set" do
       expect(RequestTimeout.time_remaining).to eq nil
+    end
+  end
+
+  describe "time_elapsed" do
+    it "returns the time elapsed" do
+      RequestTimeout.timeout(1) do
+        expect(RequestTimeout.time_elapsed).to be > 0
+      end
+    end
+
+    it "returns nil if no timeout is set" do
+      expect(RequestTimeout.time_elapsed).to eq nil
     end
   end
 

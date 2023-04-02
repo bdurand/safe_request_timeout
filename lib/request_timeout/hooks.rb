@@ -42,7 +42,7 @@ module RequestTimeout
         Array(methods).each do |method_name|
           hooks_module.class_eval <<~RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(#{splat_args})
-              raise RequestTimeout::TimeoutError if RequestTimeout.timed_out?
+              RequestTimeout.check_timeout!
               super(#{splat_args})
             end
           RUBY
