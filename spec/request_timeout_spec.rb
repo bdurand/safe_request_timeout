@@ -96,6 +96,32 @@ describe RequestTimeout do
     end
   end
 
+  describe "clear_timeout" do
+    it "clears the timeout" do
+      RequestTimeout.timeout(1) do
+        RequestTimeout.clear_timeout
+        expect(RequestTimeout.time_remaining).to be nil
+      end
+    end
+
+    it "clears the timeout just inside a block" do
+      block_called = false
+      RequestTimeout.timeout(1) do
+        RequestTimeout.clear_timeout do
+          block_called = true
+          expect(RequestTimeout.time_remaining).to be nil
+        end
+        expect(RequestTimeout.time_remaining).to be > 0
+      end
+      expect(block_called).to eq true
+    end
+
+    it "does nothing if not in a timeout block" do
+      RequestTimeout.clear_timeout
+      expect(RequestTimeout.time_remaining).to be nil
+    end
+  end
+
   describe "time_remaining" do
     it "returns the time remaining" do
       RequestTimeout.timeout(1) do

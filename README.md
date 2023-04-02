@@ -3,13 +3,13 @@
 [![Continuous Integration](https://github.com/bdurand/request_timeout/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/request_timeout/actions/workflows/continuous_integration.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
 
-This gem adds the ability to safely wrap any Ruby code in a safe timeout block.
+This gem provides a safe and convenient mechanism for adding a general timeout to a block of code. The gem ensures that the timeout function is safe to call and will not raise timeout errors from random places leaving your application in an indeterminate state. The gem comes with default hooks to several popular Ruby libraries, making it easy to add timeout checks to your application.
 
 It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack request. This request may be behind a web server which is alread implementing a timeout. If a client makes a request that is taking too long, the web server will timeout the network request. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer listening wasting server resources.
 
 When requests start timing out due to an external issue like a slow database query, then this behavior makes it more difficult to recover and can cascade an isolated issue into a general site outage. Often the timeouts you have on those resources won't cover this case either since individual queries never hit the timeout limit.
 
-This code is safe to use to add timeout blocks. Unlike the `Timeout` class in the Ruby standard library, this code is very explicit about where timeout errors can be raised, so you don't need to worry about a timeout leaving your application in an indeterminate state.
+Unlike the `Timeout` class in the Ruby standard library, this code is very explicit about where timeout errors can be raised, so you don't need to worry about a timeout leaving your application in an indeterminate state.
 
 ## Usage
 
@@ -21,7 +21,7 @@ RequestTimeout.timeout(15) do
 end
 ```
 
-By itself, this won't do anything. Unlike normal timeouts, there is no background process that will kill the operation after a defined period. Instead, you will need to periodically call `RequestTimeout.check_timeout!` from within your code. Calling this method within a timeout block will raise an error if the time spent in that block has exceeded the max allowed. It's always best to call it before doing an expensive operation since there's no point in timing out if we've already done the work.
+By itself, this won't do anything. Unlike normal timeouts, there is no background process that will kill the operation after a defined period. Instead, you will need to periodically call `RequestTimeout.check_timeout!` from within your code. Calling this method within a timeout block will raise an error if the time spent in that block has exceeded the max allowed. It's always best to call it before doing an expensive operation since there's no point in timing out if we've already done the work. This method will also clear the current timeout, so you don't have to worry about it generating a cascading to a series of timeout errors.
 
 ```ruby
 RequestTimeout.timeout(5) do
@@ -42,7 +42,26 @@ RequestTimeout.timeout(nil) do
 end
 ```
 
-You can also set the timeout duration with a `Proc` that will be evaluated at runtim.
+You can also set the timeout duration with a `Proc` that will be evaluated at runtime.
+
+```ruby
+RequestTimeout.timeout(lambda { CurrentUser.new.admin? ? nil : 5 })
+  ...
+end
+```
+
+You can also clear any timeouts if you want to ensure a block of code can run without begin timed out (i.e. if you need to run cleanup code).
+
+```ruby
+RequestTimeout.timeout(5) do
+  begin
+    do_something
+  ensure
+    RequestTimeout.clear_timeout
+    cleanup_request
+  end
+end
+```
 
 ### Hooks
 

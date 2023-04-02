@@ -103,6 +103,19 @@ module RequestTimeout
         Thread.current[:request_timeout_timeout_at] = timeout_at
       end
     end
+
+    # Clear the current timeout. If a block is passed, then the timeout will be cleared
+    # only for the duration of the block.
+    #
+    # @yield the block to execute if one is given
+    # @yieldreturn [Object] the result of the block
+    def clear_timeout(&block)
+      if block
+        timeout(nil, &block)
+      else
+        set_timeout(nil)
+      end
+    end
   end
 end
 
