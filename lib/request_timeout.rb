@@ -92,6 +92,8 @@ module RequestTimeout
     # Set the duration for the current timeout block. This is useful if you want to set the duration
     # after the timeout block has started. The timer for the timeout block will restart whenever
     # a new duration is set.
+    #
+    # @return [void]
     def set_timeout(duration)
       if Thread.current[:request_timeout_started_at]
         start_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
