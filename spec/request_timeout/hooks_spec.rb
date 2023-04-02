@@ -38,10 +38,8 @@ describe RequestTimeout::Hooks do
 
         sleep 0.11
 
-        expect { object.thing_1(1) }.to raise_error(RequestTimeout::TimeoutError)
-        expect { object.thing_2(arg: 2) }.to raise_error(RequestTimeout::TimeoutError)
-        expect { object.thing_3(1, arg_2: 2) }.to raise_error(RequestTimeout::TimeoutError)
         expect(object.thing_4(4)).to eq 4
+        expect { object.thing_1(1) }.to raise_error(RequestTimeout::TimeoutError)
       end
     end
   end

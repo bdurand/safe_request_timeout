@@ -60,11 +60,12 @@ describe RequestTimeout do
   end
 
   describe "check_timeout!" do
-    it "raises a RequestTimeout::TimeoutError if the timeout has been reached" do
+    it "raises a single RequestTimeout::TimeoutError if the timeout has been reached" do
       RequestTimeout.timeout(0.1) do
         RequestTimeout.check_timeout!
         sleep 0.11
         expect { RequestTimeout.check_timeout! }.to raise_error(RequestTimeout::TimeoutError)
+        RequestTimeout.check_timeout!
       end
     end
   end

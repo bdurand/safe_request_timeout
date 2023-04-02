@@ -31,8 +31,8 @@ module RequestTimeout
     def timeout(duration, &block)
       duration = duration.call if duration.respond_to?(:call)
 
-      previous_start_at = Thread.current.thread_variable_get(:request_timeout_started_at)
-      previous_timeout_at = Thread.current.thread_variable_get(:request_timeout_timeout_at)
+      previous_start_at = Thread.current[:request_timeout_started_at]
+      previous_timeout_at = Thread.current[:request_timeout_timeout_at]
 
       start_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
       timeout_at = start_at + duration if duration
@@ -41,12 +41,12 @@ module RequestTimeout
       end
 
       begin
-        Thread.current.thread_variable_set(:request_timeout_started_at, start_at)
-        Thread.current.thread_variable_set(:request_timeout_timeout_at, timeout_at)
+        Thread.current[:request_timeout_started_at] = start_at
+        Thread.current[:request_timeout_timeout_at] = timeout_at
         yield
       ensure
-        Thread.current.thread_variable_set(:request_timeout_started_at, previous_start_at)
-        Thread.current.thread_variable_set(:request_timeout_timeout_at, previous_timeout_at)
+        Thread.current[:request_timeout_started_at] = previous_start_at
+        Thread.current[:request_timeout_timeout_at] = previous_timeout_at
       end
     end
 
@@ -54,16 +54,21 @@ module RequestTimeout
     #
     # @return [Boolean] true if the current timeout block has timed out
     def timed_out?
-      timeout_at = Thread.current.thread_variable_get(:request_timeout_timeout_at)
+      timeout_at = Thread.current[:request_timeout_timeout_at]
       !!timeout_at && Process.clock_gettime(Process::CLOCK_MONOTONIC) > timeout_at
     end
 
-    # Check if the current timeout block has timed out and raise an error if it has.
+    # Raise an error if the current timeout block has timed out. If there is no timeout block,
+    # then this method does nothing. If an error is raised, then the current timeout
+    # is cleared to prevent the error from being raised multiple times.
     #
     # @return [void]
     # @raise [RequestTimeout::TimeoutError] if the current timeout block has timed out
     def check_timeout!
-      raise TimeoutError.new("after #{time_elapsed.round(3)}ms") if timed_out?
+      if timed_out?
+        Thread.current[:request_timeout_timeout_at] = nil
+        raise TimeoutError.new("after #{time_elapsed.round(6)} seconds")
+      end
     end
 
     # Get the number of seconds remaining in the current timeout block or nil if there is no
@@ -71,7 +76,7 @@ module RequestTimeout
     #
     # @return [Float, nil] the number of seconds remaining in the current timeout block
     def time_remaining
-      timeout_at = Thread.current.thread_variable_get(:request_timeout_timeout_at)
+      timeout_at = Thread.current[:request_timeout_timeout_at]
       [timeout_at - Process.clock_gettime(Process::CLOCK_MONOTONIC), 0.0].max if timeout_at
     end
 
@@ -80,7 +85,7 @@ module RequestTimeout
     #
     # @return [Float, nil] the number of seconds elapsed in the current timeout block began
     def time_elapsed
-      start_at = Thread.current.thread_variable_get(:request_timeout_started_at)
+      start_at = Thread.current[:request_timeout_started_at]
       Process.clock_gettime(Process::CLOCK_MONOTONIC) - start_at if start_at
     end
 
@@ -88,12 +93,12 @@ module RequestTimeout
     # after the timeout block has started. The timer for the timeout block will restart whenever
     # a new duration is set.
     def set_timeout(duration)
-      if Thread.current.thread_variable_get(:request_timeout_started_at)
+      if Thread.current[:request_timeout_started_at]
         start_at = Process.clock_gettime(Process::CLOCK_MONOTONIC)
         duration = duration.call if duration.respond_to?(:call)
         timeout_at = start_at + duration if duration
-        Thread.current.thread_variable_set(:request_timeout_started_at, start_at)
-        Thread.current.thread_variable_set(:request_timeout_timeout_at, timeout_at)
+        Thread.current[:request_timeout_started_at] = start_at
+        Thread.current[:request_timeout_timeout_at] = timeout_at
       end
     end
   end
