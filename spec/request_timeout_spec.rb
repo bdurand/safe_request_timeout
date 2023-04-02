@@ -10,6 +10,9 @@ describe RequestTimeout do
         sleep 0.11
         expect(RequestTimeout.timed_out?).to eq true
       end
+
+      expect(RequestTimeout.timed_out?).to eq false
+      expect(RequestTimeout.time_remaining).to be nil
     end
 
     it "returns the value of the block" do
@@ -47,6 +50,13 @@ describe RequestTimeout do
         end
       end
     end
+
+    it "can set the duration with a Proc" do
+      RequestTimeout.timeout(lambda { 1 }) do
+        expect(RequestTimeout.time_remaining).to be > 0
+        expect(RequestTimeout.time_remaining).to be <= 1
+      end
+    end
   end
 
   describe "set_timeout" do
@@ -63,6 +73,9 @@ describe RequestTimeout do
 
         RequestTimeout.set_timeout(nil)
         expect(RequestTimeout.time_remaining).to be nil
+
+        RequestTimeout.set_timeout(lambda { 2 })
+        expect(RequestTimeout.time_remaining).to be > 1
       end
     end
 
