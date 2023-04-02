@@ -93,6 +93,8 @@ This gem ships with Rack middleware that can set up a timeout block on all Rack 
 Rails.configuration.middleware.use RequestTimeout::RackMiddleware, 15
 ```
 
+If you want to customize the timeout per request, you can call `RequestTimeout.set_timeout` inside your request handling to change the value for the current request. You can also define the timeout duration with a `Proc` which will be called a runtime.
+
 ### Sidekiq Middleware
 
 This gem ships with Sidekiq middleware that can add timeout support to Sidekiq workers. The middleware needs to be added to the server middleware in the Sidekiq initialization.
