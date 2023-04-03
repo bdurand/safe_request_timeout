@@ -23,15 +23,13 @@ jobs:
             standardrb: true
             coverage: true
           - ruby: "3.1"
-            appraisal: "v5"
+            appraisal: "activerecord_7"
           - ruby: "3.0"
-            appraisal: "v4"
-          - ruby: "2.7"
-            appraisal: "v3"
+            appraisal: "activerecord_6"
           - ruby: "2.6"
-            appraisal: "v2"
+            appraisal: "activerecord_5"
           - ruby: "2.5"
-            appraisal: "v1"
+            appraisal: "activerecord_4"
     steps:
       - name: Checkout
         uses: actions/checkout@v3

@@ -2,14 +2,14 @@
 
 module RequestTimeout
   class Railtie < Rails::Railtie
-    Rails.configuration.request_timeout_duration ||= nil
+    Rails.configuration.request_timeout ||= nil
 
-    initializer "request_timeout.add_timeout" do
+    initializer "request_timeout" do
       ActiveSupport.on_load(:active_record) do
         RequestTimeout::ActiveRecordHook.add_timeout!
       end
 
-      Rails.configuration.middleware.use RequestTimeout::RackMiddleware, Rails.configuration.request_timeout_duration
+      Rails.configuration.middleware.use RequestTimeout::RackMiddleware, -> { Rails.configuration.request_timeout }
 
       if defined?(Sidekiq.server?) && Sidekiq.server?
         Sidekiq.configure_server do |config|
