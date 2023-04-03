@@ -3,6 +3,8 @@
 [![Continuous Integration](https://github.com/bdurand/request_timeout/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/request_timeout/actions/workflows/continuous_integration.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
 
+:construction:
+
 This gem provides a safe and convenient mechanism for adding a general timeout to a block of code. The gem ensures that the timeout function is safe to call and will not raise timeout errors from random places leaving your application in an indeterminate state. The gem comes with default hooks to several popular Ruby libraries, making it easy to add timeout checks to your application.
 
 It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack request. This request may be behind a web server which is alread implementing a timeout. If a client makes a request that is taking too long, the web server will timeout the network request. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer listening wasting server resources.
@@ -65,29 +67,10 @@ end
 
 ### Hooks
 
-Figuring out where and how often to call `check_timeout!` in your code can be ugly and difficult. The best place to do this is right before your code calls any external service. This gem comes with tools to hook into these areas of code in several popular Ruby database and HTTP libraries. This is opt-in behavior so you can control which libraries to hook into. Once you've hooked into a library, though, any call to that library will check the current timeout block and raise a `RequestTimeout::TimeoutError` before making calls to the resource if necessary.
-
-You can enable whichever bundled hooks you want with the `add_timeout!` method. You should be strategic about which hooks to add to core libraries. For instance, in a Rails application, adding hooks to ActiveRecord should be good enough.
-
-```ruby
-RequestTimeout::Hooks::ActiveRecord.add_timeout!
-RequestTimeout::Hooks::Redis.add_timeout!
-RequestTimeout::Hooks::Dalli.add_timeout!
-RequestTimeout::Hooks::Bunny.add_timeout!
-RequestTimeout::Hooks::Cassandra.add_timeout!
-RequestTimeout::Hooks::NetHTTP.add_timeout!
-RequestTimeout::Hooks::HTTP.add_timeout!
-RequestTimeout::Hooks::HTTPClient.add_timeout!
-RequestTimeout::Hooks::Curb.add_timeout!
-RequestTimeout::Hooks::Excon.add_timeout!
-RequestTimeout::Hooks::Typhoeus.add_timeout!
-```
-
-In a Rails application you should wrap this with `ActiveSupport.on_load` to ensure ActiveRecord is initialized first.
 
 ```ruby
 ActiveSupport.on_load(:active_record) do
-  RequestTimeout::Hooks::ActiveRecord.add_timeout!
+  RequestTimeout::ActiveRecordHook.add_timeout!
 end
 ```
 
@@ -156,8 +139,6 @@ $ gem install request_timeout
 Open a pull request on GitHub.
 
 Please use the [standardrb](https://github.com/testdouble/standard) syntax and lint your code with `standardrb --fix` before submitting.
-
-Hooks for other common libraries are always appreciated.
 
 ## License
 

@@ -39,16 +39,3 @@ module RequestTimeout
     end
   end
 end
-
-require_relative "hooks/base"
-require_relative "hooks/active_record"
-require_relative "hooks/bunny"
-require_relative "hooks/cassandra"
-require_relative "hooks/curb"
-require_relative "hooks/dalli"
-require_relative "hooks/excon"
-require_relative "hooks/httpclient"
-require_relative "hooks/http"
-require_relative "hooks/net_http"
-require_relative "hooks/redis"
-require_relative "hooks/typhoeus"

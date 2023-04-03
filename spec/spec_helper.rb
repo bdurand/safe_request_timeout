@@ -19,6 +19,14 @@ require "dotenv/load"
 require_relative "../lib/request_timeout"
 
 ActiveRecord::Base.establish_connection("adapter" => "sqlite3", "database" => ":memory:")
+RequestTimeout::ActiveRecordHook.add_timeout!
+
+ActiveRecord::Base.connection.create_table(:test_models) do |t|
+  t.string :name
+end
+
+class TestModel < ActiveRecord::Base
+end
 
 RSpec.configure do |config|
   config.expect_with :rspec do |c|

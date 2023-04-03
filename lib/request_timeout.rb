@@ -120,6 +120,11 @@ module RequestTimeout
 end
 
 require_relative "request_timeout/hooks"
+require_relative "request_timeout/active_record_hook"
 require_relative "request_timeout/rack_middleware"
 require_relative "request_timeout/sidekiq_middleware"
 require_relative "request_timeout/version"
+
+if defined?(Rails::Railtie)
+  require_relative "request_timeout/railtie"
+end
