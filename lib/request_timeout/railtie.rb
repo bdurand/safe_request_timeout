@@ -7,8 +7,8 @@ module RequestTimeout
         RequestTimeout::ActiveRecordHook.add_timeout!
       end
 
-      app.config.request_timeout = nil unless defined?(app.config.rack_request_timeout)
-      app.middleware.use RequestTimeout::RackMiddleware, -> { app.config.rack_request_timeout }
+      app.config.rack_request_timeout = nil unless defined?(app.config.rack_request_timeout)
+      app.middleware.use RequestTimeout::RackMiddleware, app.config.rack_request_timeout
 
       if defined?(Sidekiq.server?) && Sidekiq.server?
         Sidekiq.configure_server do |config|
