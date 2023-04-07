@@ -8,10 +8,11 @@ module RequestTimeout
     def initialize(app, timeout = nil)
       @app = app
       @timeout = timeout
+      @timeout_block = true if timeout.is_a?(Proc) && timeout.arity == 1
     end
 
     def call(env)
-      RequestTimeout.timeout(@timeout) do
+      RequestTimeout.timeout(@timeout_block ? @timeout.call(env) : @timeout) do
         @app.call(env)
       end
     end
