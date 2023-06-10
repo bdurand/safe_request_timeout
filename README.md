@@ -118,7 +118,7 @@ This gem comes with built in support for Rails applications.
 
 - A timeout block is added around ActiveJob execution. Jobs can specify a timeout by calling `RequestTimeout.set_timeout` in the `perform` method or in a `before_perform` callback.
 
-- A timeout check is added on all ActiveRecord queries. You can disable this hook by setting `request_timeout.active_record_hook` to false in your Rails configuration.
+- A timeout check is added on all ActiveRecord queries. The timeout is cleared when a database transaction is committed so that you won't unexpectedly timeout a request after making persistent changes. You can disable these hooks by setting `request_timeout.active_record_hook` to false in your Rails configuration.
 
 ## Installation
 

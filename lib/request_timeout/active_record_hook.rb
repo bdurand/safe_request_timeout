@@ -9,7 +9,10 @@ module RequestTimeout
       # @return [void]
       def add_timeout!(connection_class = nil)
         connection_class ||= ::ActiveRecord::Base.connection.class
+
         RequestTimeout::Hooks.add_timeout!(connection_class, [:exec_query])
+
+        RequestTimeout::Hooks.clear_timeout!(connection_class, [:commit_db_transaction])
       end
     end
   end
