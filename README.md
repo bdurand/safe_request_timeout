@@ -5,9 +5,9 @@
 
 :construction:
 
-This gem provides a safe and convenient mechanism for adding a general timeout to a block of code. The gem ensures that the timeout function is safe to call and will not raise timeout errors from random places leaving your application in an indeterminate state. The gem comes with default hooks to several popular Ruby libraries, making it easy to add timeout checks to your application.
+This gem provides a safe and convenient mechanism for adding a timeout mechanism for a block of code. The gem ensures that the timeout is safe to call and will not raise timeout errors from random places in your code which can leave your application in an indeterminate state.
 
-It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack request. This request may be behind a web server which is alread implementing a timeout. If a client makes a request that is taking too long, the web server will timeout the network request. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer listening wasting server resources.
+It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack HTTP request. This request may be behind a web server process which already has it's own timeout where it sends an error back to the client when the request is taking too long to process. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer going to receive the response which just wastes server resources.
 
 When requests start timing out due to an external issue like a slow database query, then this behavior makes it more difficult to recover and can cascade an isolated issue into a general site outage. Often the timeouts you have on those resources won't cover this case either since individual queries never hit the timeout limit.
 
@@ -23,11 +23,12 @@ RequestTimeout.timeout(15) do
 end
 ```
 
-By itself, this won't do anything. Unlike normal timeouts, there is no background process that will kill the operation after a defined period. Instead, you will need to periodically call `RequestTimeout.check_timeout!` from within your code. Calling this method within a timeout block will raise an error if the time spent in that block has exceeded the max allowed. It's always best to call it before doing an expensive operation since there's no point in timing out if we've already done the work. This method will also clear the current timeout, so you don't have to worry about it generating a cascading to a series of timeout errors.
+By itself, this won't do anything. Unlike normal timeouts, there is no background process that will kill the operation after a defined period. Instead, you will need to periodically call `RequestTimeout.check_timeout!` from within your code. Calling this method within a timeout block will raise an error if the time spent in that block has exceeded the max allowed. It's always best to call it before doing an expensive operation since there's no point in timing out if we've already done the work. This method will also clear the current timeout, so you don't have to worry about it generating a cascading series of timeout errors.
 
 ```ruby
 RequestTimeout.timeout(5) do
   1000.times do
+    # This will raise an error if the loop takes longer than 5 seconds.
     RequestTimeout.check_timeout!
     do_somthing
   end
@@ -67,14 +68,7 @@ end
 
 ### Hooks
 
-
-```ruby
-ActiveSupport.on_load(:active_record) do
-  RequestTimeout::ActiveRecordHook.add_timeout!
-end
-```
-
-You can easily hook into other classes as well. You need to identify the class and methods where you want to add the timeout hooks and then call `add_timeout!`.
+You can add hooks into other classes to check the current timeout if you don't want to have to sprinkle `RequestTimeout.check_timeout!` throughout your code. To do this, use the `RequestTimeout.add_timeout!` method. You need to specify the class and methods where you want to add the timeout hooks:
 
 ```ruby
 # Add a timeout check to the MyDriver#make_request method.
@@ -113,6 +107,18 @@ class SlowWorker
   sidekiq_options request_timeout: 15
 end
 ```
+
+### Rails
+
+This gem comes with built in support for Rails applications.
+
+- The Rack middleware is added. By default there is no timeout value set. You can specify a global one by setting `request_timout.rack_timeout` in your Rails configuration.
+
+- The Sidekiq middleware is added. Sidekiq workers can specify a timeout with the `request_timeout` option.
+
+- A timeout block is added around ActiveJob execution. Jobs can specify a timeout by calling `RequestTimeout.set_timeout` in the `perform` method or in a `before_perform` callback.
+
+- A timeout check is added on all ActiveRecord queries. You can disable this hook by setting `request_timeout.active_record_hook` to false in your Rails configuration.
 
 ## Installation
 
