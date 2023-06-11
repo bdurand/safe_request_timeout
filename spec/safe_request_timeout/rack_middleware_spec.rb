@@ -19,7 +19,7 @@ describe SafeRequestTimeout::RackMiddleware do
     app = lambda do |env|
       [200, {v: env[:v], remaining: SafeRequestTimeout.time_remaining}, ["OK"]]
     end
-    middleware = SafeRequestTimeout::RackMiddleware.new(app, lambda { |req| req.env[:timeout].to_i })
+    middleware = SafeRequestTimeout::RackMiddleware.new(app, lambda { |env| env[:timeout].to_i })
     response = middleware.call({v: 1, timeout: 5})
     expect(response[0]).to eq 200
     expect(response[1][:v]).to eq 1
@@ -31,7 +31,7 @@ describe SafeRequestTimeout::RackMiddleware do
     app = lambda do |env|
       [200, {v: env[:v], remaining: SafeRequestTimeout.time_remaining}, ["OK"]]
     end
-    middleware = SafeRequestTimeout::RackMiddleware.new(app, lambda { |req| req.env[:timeout].to_i })
+    middleware = SafeRequestTimeout::RackMiddleware.new(app, lambda { |env| env[:timeout].to_i })
     response = middleware.call({v: 1, timeout: 5})
     expect(response[0]).to eq 200
     expect(response[1][:v]).to eq 1

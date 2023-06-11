@@ -6,14 +6,13 @@ module SafeRequestTimeout
     # @param app [Object] The Rack application to wrap.
     # @param timeout [Integer, Proc, nil] The timeout in seconds.
     def initialize(app, timeout = nil)
-      require "rack"
       @app = app
       @timeout = timeout
       @timeout_block = true if timeout.is_a?(Proc) && timeout.arity == 1
     end
 
     def call(env)
-      SafeRequestTimeout.timeout(@timeout_block ? @timeout.call(Rack::Request.new(env)) : @timeout) do
+      SafeRequestTimeout.timeout(@timeout_block ? @timeout.call(env) : @timeout) do
         @app.call(env)
       end
     end

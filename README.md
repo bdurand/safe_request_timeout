@@ -5,19 +5,19 @@
 
 :construction:
 
-This gem provides a safe and convenient mechanism for adding a timeout mechanism for a block of code. The gem ensures that the timeout is safe to call and will not raise timeout errors from random places in your code which can leave your application in an indeterminate state.
+This gem provides a safe and convenient mechanism for adding a timeout mechanism to a block of code. The gem ensures that the timeout is safe to call and will not raise timeout errors from random places in your code which can leave your application in an indeterminate state.
 
-It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack HTTP request. This request may be behind a web server process which already has it's own timeout where it sends an error back to the client when the request is taking too long to process. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer going to receive the response which just wastes server resources.
+It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack HTTP request. This request may be behind a web server running in a separate process with it's own timeout where it sends an error back to the client when the application is taking too long to process the request. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer going to receive the response which just wastes server resources.
 
-When requests start timing out due to an external issue like a slow database query, then it is more difficult to recover and can cascade an isolated issue into a general site outage. Often the timeouts you have on resources like database connections won't cover this case either since individual queries never hit the timeout limit.
+When requests start timing out due to an external issue like a slow database query, then it is more difficult to recover and can cascade an isolated issue into a general site outage. Often the timeouts you have on resources like database connections won't cover this case either since individual queries might never hit the timeout limit.
 
-Unlike the `Timeout` class in the Ruby standard library, this code is very explicit about where timeout errors can be raised, so you don't need to worry about a timeout leaving your application in an indeterminate state.
+Unlike the `Timeout` class in the Ruby standard library, this code is very explicit about where timeout errors can be raised, so you don't need to worry about a timeout error in an unexpected place leaving your application in an indeterminate state.
 
 There is built in support for Rails applications. For other frameworks you will need to add some middleware and hooks to implement the timeout mechanism.
 
 ## Usage
 
-You can wrap any block in a timout block.
+You can wrap code in a timout block.
 
 ```ruby
 SafeRequestTimeout.timeout(15) do
@@ -27,7 +27,7 @@ end
 
 By itself, this won't do anything. Unlike normal timeouts, there is no background process that will kill the operation after a defined period. Instead, you will need to periodically call `SafeRequestTimeout.check_timeout!` from within your code. Calling this method within a timeout block will raise an error if the time spent in that block has exceeded the max allowed. Calling it outside of a timeout block will do nothing.
 
-It's always generally best to call the `check_timeou!` method before doing an expensive operation since there's no point in timing out after we've already done the work. This method will also clear the current timeout, so you don't have to worry about it generating a cascading series of timeout errors.
+It is generally best to call the `check_timeout!` method before doing an expensive operation since there's no point in timing out after the work has already been done. This method will also clear the current timeout, so you don't have to worry about it generating a cascading series of timeout errors in any error handling code.
 
 ```ruby
 SafeRequestTimeout.timeout(5) do
@@ -39,13 +39,15 @@ SafeRequestTimeout.timeout(5) do
 end
 ```
 
-You can also set a timeout value retroactively from within a `timeout` block. You can use this to change the timeout based on application state.
+You can also set a timeout value retroactively from within a `timeout` block. You can use this feature to change the timeout based on application state.
 
 ```ruby
 # Setting a timeout of nil will set up a block that will never timout.
 SafeRequestTimeout.timeout(nil) do
   # Set the timeout duration to 5 seconds for non-admin users
   SafeRequestTimeout.set_timeout(5) unless current_user.admin?
+
+  do_something
 end
 ```
 
@@ -57,7 +59,7 @@ SafeRequestTimeout.timeout(lambda { CurrentUser.new.admin? ? nil : 5 })
 end
 ```
 
-You can also clear any timeouts if you want to ensure a block of code can run without begin timed out (i.e. if you need to run cleanup code).
+You can clear the timeout if you want to ensure a block of code can run without begin timed out (i.e. if you need to run cleanup code).
 
 ```ruby
 SafeRequestTimeout.timeout(5) do
@@ -90,12 +92,12 @@ RackBuilder.new do
 end
 ```
 
-If you want to customize the timeout per request, you can call `SafeRequestTimeout.set_timeout` inside your request handling to change the value for the current request. You can also define the timeout duration with a `Proc` which will be called at runtime with a `Rack::Request` object.
+If you want to customize the timeout per request, you can call `SafeRequestTimeout.set_timeout` inside your request handling to change the value for the current request. You can also define the timeout duration with a `Proc` which will be called at runtime with the `env` object passed for the request.
 
 ```ruby
 RackBuilder.new do
-  use SafeRequestTimeout::RackMiddleware, lambda { |request|
-    10 unless request.path.start_with?("/admin")
+  use SafeRequestTimeout::RackMiddleware, lambda { |env|
+    10 unless Rack::Request.new(env).path.start_with?("/admin")
   }
   run app
 end
@@ -128,9 +130,9 @@ end
 
 This gem comes with built in support for Rails applications.
 
-- The Rack middleware is added. There is no timeout value set by default. You can specify a global one by setting `safe_request_timout.rack_timeout` in your Rails configuration.
+- The Rack middleware is added to the middleware chain. There is no timeout value set by default. You can specify a global one by setting `safe_request_timout.rack_timeout` in your Rails configuration.
 
-- The Sidekiq middleware is added. Sidekiq workers can specify a timeout with the `safe_request_timeout` option.
+- If Sidekiq is being used, then the Sidekiq middleware is added. Sidekiq workers can specify a timeout with the `safe_request_timeout` option.
 
 - A timeout block is added around ActiveJob execution. Jobs can specify a timeout by calling `SafeRequestTimeout.set_timeout` in the `perform` method or in a `before_perform` callback.
 
