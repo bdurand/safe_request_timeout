@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module RequestTimeout
+module SafeRequestTimeout
   # Rack middleware that adds a timeout block to all requests.
   class RackMiddleware
     # @param app [Object] The Rack application to wrap.
@@ -12,7 +12,7 @@ module RequestTimeout
     end
 
     def call(env)
-      RequestTimeout.timeout(@timeout_block ? @timeout.call(env) : @timeout) do
+      SafeRequestTimeout.timeout(@timeout_block ? @timeout.call(env) : @timeout) do
         @app.call(env)
       end
     end

@@ -1,11 +1,11 @@
 Gem::Specification.new do |spec|
-  spec.name = "request_timeout"
+  spec.name = "safe_request_timeout"
   spec.version = File.read(File.expand_path("../VERSION", __FILE__)).strip
   spec.authors = ["Brian Durand"]
   spec.email = ["bbdurand@gmail.com"]
 
-  spec.summary = "Mechanism for safely aborting long-running requests."
-  spec.homepage = "https://github.com/bdurand/request_timeout"
+  spec.summary = "Mechanism for safely aborting long-running requests after a specified timeout."
+  spec.homepage = "https://github.com/bdurand/safe_request_timeout"
   spec.license = "MIT"
 
   # Specify which files should be added to the gem when it is released.

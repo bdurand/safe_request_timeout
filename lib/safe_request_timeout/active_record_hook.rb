@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module RequestTimeout
+module SafeRequestTimeout
   class ActiveRecordHook
     class << self
       # Add the timeout hook to the connection class.
@@ -10,9 +10,9 @@ module RequestTimeout
       def add_timeout!(connection_class = nil)
         connection_class ||= ::ActiveRecord::Base.connection.class
 
-        RequestTimeout::Hooks.add_timeout!(connection_class, [:exec_query])
+        SafeRequestTimeout::Hooks.add_timeout!(connection_class, [:exec_query])
 
-        RequestTimeout::Hooks.clear_timeout!(connection_class, [:commit_db_transaction])
+        SafeRequestTimeout::Hooks.clear_timeout!(connection_class, [:commit_db_transaction])
       end
     end
   end

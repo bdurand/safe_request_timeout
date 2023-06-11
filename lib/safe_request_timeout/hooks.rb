@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-module RequestTimeout
+module SafeRequestTimeout
   # Hooks into other classes from other libraries with timeout blocks. This allows
   # timeouts to be automatically checked before making requests to external services.
   module Hooks
@@ -12,7 +12,7 @@ module RequestTimeout
         Array(methods).each do |method_name|
           hooks_module.class_eval <<~RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(#{splat_args})
-              RequestTimeout.check_timeout!
+              SafeRequestTimeout.check_timeout!
               super(#{splat_args})
             end
           RUBY
@@ -27,7 +27,7 @@ module RequestTimeout
         Array(methods).each do |method_name|
           hooks_module.class_eval <<~RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(#{splat_args})
-              RequestTimeout.clear_timeout
+              SafeRequestTimeout.clear_timeout
               super(#{splat_args})
             end
           RUBY

@@ -16,10 +16,10 @@ Bundler.require(:default, :test)
 
 require "dotenv/load"
 
-require_relative "../lib/request_timeout"
+require_relative "../lib/safe_request_timeout"
 
 ActiveRecord::Base.establish_connection("adapter" => "sqlite3", "database" => ":memory:")
-RequestTimeout::ActiveRecordHook.add_timeout!
+SafeRequestTimeout::ActiveRecordHook.add_timeout!
 
 ActiveRecord::Base.connection.create_table(:test_models) do |t|
   t.string :name
