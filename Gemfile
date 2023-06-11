@@ -4,6 +4,7 @@ gemspec
 
 gem "activerecord", require: "active_record"
 gem "sqlite3"
+gem "rack"
 
 gem "dotenv"
 gem "rspec", "~> 3.10"

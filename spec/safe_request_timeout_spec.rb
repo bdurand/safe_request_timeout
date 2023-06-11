@@ -68,6 +68,10 @@ describe SafeRequestTimeout do
         SafeRequestTimeout.check_timeout!
       end
     end
+
+    it "does nothing outside of a timeout block" do
+      expect { SafeRequestTimeout.check_timeout! }.not_to raise_error
+    end
   end
 
   describe "set_timeout" do
