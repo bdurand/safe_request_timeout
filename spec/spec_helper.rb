@@ -19,7 +19,22 @@ require "dotenv/load"
 require_relative "../lib/safe_request_timeout"
 
 ActiveRecord::Base.establish_connection("adapter" => "sqlite3", "database" => ":memory:")
-SafeRequestTimeout::ActiveRecordHook.add_timeout!
+
+if defined?(Rails)
+  if defined?(Sidekiq)
+    require "sidekiq/cli"
+  end
+
+  require_relative "../lib/safe_request_timeout/railtie"
+
+  app = Class.new(Rails::Application).new
+  app.config = Rails.configuration
+  SafeRequestTimeout::Railtie.initializers.each do |initializer|
+    initializer.run(app)
+  end
+else
+  SafeRequestTimeout::ActiveRecordHook.add_timeout!
+end
 
 ActiveRecord::Base.connection.create_table(:test_models) do |t|
   t.string :name

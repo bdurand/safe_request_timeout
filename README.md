@@ -3,8 +3,6 @@
 [![Continuous Integration](https://github.com/bdurand/safe_request_timeout/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/safe_request_timeout/actions/workflows/continuous_integration.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
 
-:construction:
-
 This gem provides a safe and convenient mechanism for adding a timeout mechanism to a block of code. The gem ensures that the timeout is safe to call and will not raise timeout errors from random places in your code which can leave your application in an indeterminate state.
 
 It is designed to work in situations where there is a general timeout needed on some kind of request. For instance, consider a Rack HTTP request. This request may be behind a web server running in a separate process with it's own timeout where it sends an error back to the client when the application is taking too long to process the request. However, your Ruby application won't know anything about this and will continue processing the request and generating a response for a client that is no longer going to receive the response which just wastes server resources.
@@ -139,8 +137,6 @@ This gem comes with built in support for Rails applications.
 - A timeout check is added on all ActiveRecord queries. The timeout is cleared when a database transaction is committed so that you won't unexpectedly timeout a request after making persistent changes. You can disable these hooks by setting `safe_request_timeout.active_record_hook` to false in your Rails configuration.
 
 ## Installation
-
-_TODO: this tool is currently under construction and has not been published to rubygems.org yet. You can still install directly from GitHub._
 
 Add this line to your application's Gemfile:
 

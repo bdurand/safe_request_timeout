@@ -1,5 +1,10 @@
 # frozen_string_literal: true
 
+appraise "rails" do
+  gem "rails"
+  gem "sidekiq"
+end
+
 appraise "activerecord_7" do
   gem "activerecord", "~> 7.0", require: "active_record"
   gem "sqlite3", "~> 1.4.0"
