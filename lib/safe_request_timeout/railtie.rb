@@ -2,7 +2,7 @@
 
 module SafeRequestTimeout
   class Railtie < Rails::Railtie
-    config.safe_request_timeout = ActiveSupport::OrderedOptions
+    config.safe_request_timeout = ActiveSupport::OrderedOptions.new
     config.safe_request_timeout.active_record_hook = true
     config.safe_request_timeout.rack_timeout = nil
 
@@ -22,8 +22,8 @@ module SafeRequestTimeout
       app.middleware.use SafeRequestTimeout::RackMiddleware, app.config.safe_request_timeout.rack_timeout
 
       if defined?(Sidekiq.server?) && Sidekiq.server?
-        Sidekiq.configure_server do |config|
-          config.server_middleware do |chain|
+        Sidekiq.configure_server do |sidekiq_config|
+          sidekiq_config.server_middleware do |chain|
             chain.add SafeRequestTimeout::SidekiqMiddleware
           end
         end
