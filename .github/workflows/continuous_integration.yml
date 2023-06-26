@@ -22,9 +22,8 @@ jobs:
           - ruby: "ruby"
             standardrb: true
             coverage: true
-          - ruby: "3.1"
+          - ruby: "ruby"
             appraisal: "rails"
-
           - ruby: "3.1"
             appraisal: "activerecord_7"
           - ruby: "3.0"
