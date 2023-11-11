@@ -1,34 +1,26 @@
 begin
   require "bundler/setup"
 rescue LoadError
-  warn "You must `gem install bundler` and `bundle install` to run rake tasks"
+  puts "You must `gem install bundler` and `bundle install` to run rake tasks"
 end
 
-require "rdoc/task"
+require "yard"
+YARD::Rake::YardocTask.new(:yard)
 
-RDoc::Task.new(:rdoc) do |rdoc|
-  rdoc.rdoc_dir = "rdoc"
-  rdoc.title = "SafeRequestTimeout"
-  rdoc.options << "--line-numbers"
-  rdoc.rdoc_files.include("README.md")
-  rdoc.rdoc_files.include("lib/**/*.rb")
+require "bundler/gem_tasks"
+
+task :release do
+  unless `git rev-parse --abbrev-ref HEAD`.chomp == "main"
+    warn "Gem can only be released from the main branch"
+    exit 1
+  end
 end
 
-begin
-  require "bundler/gem_tasks"
-rescue Bundler::GemspecError
-  warn "Gem tasks not available because gemspec not defined"
-end
+require "rspec/core/rake_task"
 
-begin
-  require "rspec/core/rake_task"
-  RSpec::Core::RakeTask.new(:spec)
-  task default: :spec
-rescue LoadError
-  warn "You must install rspec to run the spec rake tasks"
-end
+RSpec::Core::RakeTask.new(:spec)
 
-require "standard/rake"
+task default: :spec
 
 desc "run the specs using appraisal"
 task :appraisals do
@@ -41,3 +33,5 @@ namespace :appraisals do
     exec "bundle exec appraisal install"
   end
 end
+
+require "standard/rake"
