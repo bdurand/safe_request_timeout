@@ -1,4 +1,4 @@
-# Request Timeout
+# Safe Request Timeout
 
 [![Continuous Integration](https://github.com/bdurand/safe_request_timeout/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/safe_request_timeout/actions/workflows/continuous_integration.yml)
 [![Regression Test](https://github.com/bdurand/safe_request_timeout/actions/workflows/regression_test.yml/badge.svg)](https://github.com/bdurand/safe_request_timeout/actions/workflows/regression_test.yml)
