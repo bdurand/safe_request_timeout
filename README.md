@@ -3,6 +3,7 @@
 [![Continuous Integration](https://github.com/bdurand/safe_request_timeout/actions/workflows/continuous_integration.yml/badge.svg)](https://github.com/bdurand/safe_request_timeout/actions/workflows/continuous_integration.yml)
 [![Regression Test](https://github.com/bdurand/safe_request_timeout/actions/workflows/regression_test.yml/badge.svg)](https://github.com/bdurand/safe_request_timeout/actions/workflows/regression_test.yml)
 [![Ruby Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://github.com/testdouble/standard)
+[![Gem Version](https://badge.fury.io/rb/safe_request_timeout.svg)](https://badge.fury.io/rb/safe_request_timeout)
 
 This gem provides a safe and convenient mechanism for adding a timeout mechanism to a block of code. The gem ensures that the timeout is safe to call and will not raise timeout errors from random places in your code which can leave your application in an indeterminate state.
 
