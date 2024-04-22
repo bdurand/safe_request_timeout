@@ -9,11 +9,9 @@ module SafeRequestTimeout
     initializer "safe_request_timeout" do |app|
       if app.config.safe_request_timeout.active_record_hook
         ActiveSupport.on_load(:active_record) do
-          begin
-            SafeRequestTimeout::ActiveRecordHook.add_timeout!
-          rescue ActiveRecord::ActiveRecordError => e
-            Rails.logger&.warn("Could not add ActiveRecord hook for SafeRequestTimeout: #{e.inspect}")
-          end
+          SafeRequestTimeout::ActiveRecordHook.add_timeout!
+        rescue ActiveRecord::ActiveRecordError => e
+          Rails.logger&.warn("Could not add ActiveRecord hook for SafeRequestTimeout: #{e.inspect}")
         end
       end
 
