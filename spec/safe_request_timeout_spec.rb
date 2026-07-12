@@ -72,6 +72,36 @@ describe SafeRequestTimeout do
     it "does nothing outside of a timeout block" do
       expect { SafeRequestTimeout.check_timeout! }.not_to raise_error
     end
+
+    it "does not raise again in an outer block after a shared deadline has already raised" do
+      SafeRequestTimeout.timeout(0.1) do
+        begin
+          SafeRequestTimeout.timeout(5) do
+            sleep 0.11
+            SafeRequestTimeout.check_timeout!
+          end
+        rescue SafeRequestTimeout::TimeoutError
+        end
+
+        expect(SafeRequestTimeout.timed_out?).to eq false
+        expect { SafeRequestTimeout.check_timeout! }.not_to raise_error
+      end
+    end
+
+    it "keeps an outer deadline armed when a different inner deadline raises" do
+      SafeRequestTimeout.timeout(10) do
+        begin
+          SafeRequestTimeout.timeout(0.1) do
+            sleep 0.11
+            SafeRequestTimeout.check_timeout!
+          end
+        rescue SafeRequestTimeout::TimeoutError
+        end
+
+        expect(SafeRequestTimeout.timed_out?).to eq false
+        expect(SafeRequestTimeout.time_remaining).to be > 0
+      end
+    end
   end
 
   describe "set_timeout" do
@@ -147,6 +177,25 @@ describe SafeRequestTimeout do
 
     it "returns nil if no timeout is set" do
       expect(SafeRequestTimeout.time_elapsed).to eq nil
+    end
+  end
+
+  describe "state storage" do
+    if defined?(ActiveSupport::IsolatedExecutionState)
+      it "stores the state in ActiveSupport::IsolatedExecutionState when it is available" do
+        SafeRequestTimeout.timeout(1) do
+          expect(ActiveSupport::IsolatedExecutionState[:safe_request_timeout_started_at]).to_not be nil
+          expect(Thread.current[:safe_request_timeout_started_at]).to be nil
+        end
+      end
+    end
+
+    it "stores the state in Thread.current when ActiveSupport::IsolatedExecutionState is not available" do
+      hide_const("ActiveSupport::IsolatedExecutionState") if defined?(ActiveSupport::IsolatedExecutionState)
+      SafeRequestTimeout.timeout(1) do
+        expect(Thread.current[:safe_request_timeout_started_at]).to_not be nil
+        expect(SafeRequestTimeout.time_remaining).to be > 0
+      end
     end
   end
 

@@ -17,7 +17,7 @@ There is built in support for Rails applications. For other frameworks you will 
 
 ## Usage
 
-You can wrap code in a timout block.
+You can wrap code in a timeout block.
 
 ```ruby
 SafeRequestTimeout.timeout(15) do
@@ -34,7 +34,7 @@ SafeRequestTimeout.timeout(5) do
   1000.times do
     # This will raise an error if the loop takes longer than 5 seconds.
     SafeRequestTimeout.check_timeout!
-    do_somthing
+    do_something
   end
 end
 ```
@@ -42,7 +42,7 @@ end
 You can also set a timeout value retroactively from within a `timeout` block. You can use this feature to change the timeout based on application state.
 
 ```ruby
-# Setting a timeout of nil will set up a block that will never timout.
+# Setting a timeout of nil will set up a block that will never time out.
 SafeRequestTimeout.timeout(nil) do
   # Set the timeout duration to 5 seconds for non-admin users
   SafeRequestTimeout.set_timeout(5) unless current_user.admin?
@@ -59,7 +59,7 @@ SafeRequestTimeout.timeout(lambda { CurrentUser.new.admin? ? nil : 5 })
 end
 ```
 
-You can clear the timeout if you want to ensure a block of code can run without begin timed out (i.e. if you need to run cleanup code).
+You can clear the timeout if you want to ensure a block of code can run without being timed out (i.e. if you need to run cleanup code).
 
 ```ruby
 SafeRequestTimeout.timeout(5) do
@@ -72,9 +72,17 @@ SafeRequestTimeout.timeout(5) do
 end
 ```
 
+### Behavior notes
+
+- Timeout blocks can be nested. A nested block will use the soonest deadline of the nested blocks, so a nested block cannot extend a timeout set by an enclosing block. Calling `set_timeout` inside a nested block, however, replaces the deadline for that block even if it extends past the enclosing block's deadline; the enclosing deadline is restored when the nested block exits.
+
+- `SafeRequestTimeout::TimeoutError` is a subclass of `Timeout::Error` from the Ruby standard library. Generic error handling that rescues or retries on `Timeout::Error` will catch it as well.
+
+- The timeout state is stored per thread or fiber. When ActiveSupport 7+ is available, the state is stored in `ActiveSupport::IsolatedExecutionState` and follows the application's configured `active_support.isolation_level`. Otherwise the state is stored in fiber-local variables. In either case, the timeout will not be visible in new threads spawned within a timeout block (including ActiveRecord `load_async` queries), so `check_timeout!` calls in those threads will do nothing.
+
 ### Hooks
 
-You can add hooks into other classes to check the current timeout if you don't want to have to sprinkle `SafeRequestTimeout.check_timeout!` throughout your code. To do this, use the `SafeRequestTimeout.add_timeout!` method. You need to specify the class and methods where you want to add the timeout hooks:
+You can add hooks into other classes to check the current timeout if you don't want to have to sprinkle `SafeRequestTimeout.check_timeout!` throughout your code. To do this, use the `SafeRequestTimeout::Hooks.add_timeout!` method. You need to specify the class and methods where you want to add the timeout hooks:
 
 ```ruby
 # Add a timeout check to the MyDriver#make_request method.
@@ -130,13 +138,13 @@ end
 
 This gem comes with built in support for Rails applications.
 
-- The Rack middleware is added to the middleware chain. There is no timeout value set by default. You can specify a global one by setting `safe_request_timout.rack_timeout` in your Rails configuration.
+- The Rack middleware is added to the middleware chain. There is no timeout value set by default. You can specify a global one by setting `safe_request_timeout.rack_timeout` in your Rails configuration.
 
 - If Sidekiq is being used, then the Sidekiq middleware is added. Sidekiq workers can specify a timeout with the `safe_request_timeout` option.
 
-- A timeout block is added around ActiveJob execution. Jobs can specify a timeout by calling `SafeRequestTimeout.set_timeout` in the `perform` method or in a `before_perform` callback.
+- A timeout block is added around ActiveJob execution. Jobs can specify a timeout by calling `SafeRequestTimeout.set_timeout` in the `perform` method or in a `before_perform` callback. If a timeout has already been set up for the request or worker running the job (i.e. a job run with `perform_now` inside a request, or an ActiveJob running on Sidekiq with the Sidekiq middleware), then that timeout is kept rather than replaced.
 
-- A timeout check is added on all ActiveRecord queries. The timeout is cleared when a database transaction is committed so that you won't unexpectedly timeout a request after making persistent changes. You can disable these hooks by setting `safe_request_timeout.active_record_hook` to false in your Rails configuration.
+- A timeout check is added on all ActiveRecord queries. The timeout is cleared when a database transaction is committed so that you won't unexpectedly timeout a request after making persistent changes. You can disable these hooks by setting `safe_request_timeout.active_record_hook` to false in your Rails configuration. The hooks are installed on each database adapter class the first time a connection is instantiated, so no database connection is required at boot time and all databases in a multiple database configuration are covered.
 
 ## Installation
 

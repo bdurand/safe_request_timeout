@@ -10,14 +10,20 @@ module SafeRequestTimeout
       if app.config.safe_request_timeout.active_record_hook
         ActiveSupport.on_load(:active_record) do
           SafeRequestTimeout::ActiveRecordHook.add_timeout!
-        rescue ActiveRecord::ActiveRecordError => e
+        rescue => e
           Rails.logger&.warn("Could not add ActiveRecord hook for SafeRequestTimeout: #{e.inspect}")
         end
       end
 
-      if defined?(ActiveJob::Base.around_perform)
-        ActiveJob::Base.around_perform do |job, block|
-          SafeRequestTimeout.timeout(nil, &block)
+      ActiveSupport.on_load(:active_job) do
+        around_perform do |job, block|
+          # Open a timeout context so jobs can call set_timeout, but don't replace a timeout
+          # already established for the request or worker that is running the job.
+          if SafeRequestTimeout.time_elapsed
+            block.call
+          else
+            SafeRequestTimeout.timeout(nil, &block)
+          end
         end
       end
 
