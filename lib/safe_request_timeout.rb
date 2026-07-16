@@ -111,6 +111,10 @@ module SafeRequestTimeout
         timeout_at = start_at + duration if duration
         state[:safe_request_timeout_started_at] = start_at
         state[:safe_request_timeout_timeout_at] = timeout_at
+        # Arming a new deadline invalidates any record of a previously fired deadline so
+        # that the ensure block in `timeout` cannot mistake the new deadline for one that
+        # has already raised.
+        state[:safe_request_timeout_fired_at] = nil if timeout_at
       end
     end
 

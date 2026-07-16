@@ -11,6 +11,9 @@ module SafeRequestTimeout
         ActiveSupport.on_load(:active_record) do
           SafeRequestTimeout::ActiveRecordHook.add_timeout!
         rescue => e
+          # The hook is an optional safeguard, so any error installing it (including an
+          # unexpected incompatibility with the ActiveRecord version in use) is logged
+          # rather than allowed to prevent the application from booting.
           Rails.logger&.warn("Could not add ActiveRecord hook for SafeRequestTimeout: #{e.inspect}")
         end
       end

@@ -128,6 +128,22 @@ describe SafeRequestTimeout do
       SafeRequestTimeout.set_timeout(3)
       expect(SafeRequestTimeout.time_remaining).to be nil
     end
+
+    it "clears the record of a fired deadline when a new timeout is set" do
+      state = (defined?(ActiveSupport::IsolatedExecutionState) ? ActiveSupport::IsolatedExecutionState : Thread.current)
+      SafeRequestTimeout.timeout(0.1) do
+        sleep 0.11
+        begin
+          SafeRequestTimeout.check_timeout!
+        rescue SafeRequestTimeout::TimeoutError
+        end
+        expect(state[:safe_request_timeout_fired_at]).to_not be nil
+
+        SafeRequestTimeout.set_timeout(5)
+        expect(state[:safe_request_timeout_fired_at]).to be nil
+        expect(SafeRequestTimeout.time_remaining).to be > 4
+      end
+    end
   end
 
   describe "clear_timeout" do
