@@ -12,6 +12,8 @@ begin
 rescue LoadError
 end
 
+require "logger" # needed for ActiveRecord 6.x and 7.0
+
 Bundler.require(:default, :test)
 
 require "dotenv/load"
