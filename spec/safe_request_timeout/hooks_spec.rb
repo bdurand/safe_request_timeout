@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../spec_helper"
+require "spec_helper"
 
 class TestHooks
   def thing_1(arg)
@@ -26,7 +26,7 @@ class TestHooksDuplicate
   end
 end
 
-describe SafeRequestTimeout::Hooks do
+RSpec.describe SafeRequestTimeout::Hooks do
   describe "add_timeout!" do
     it "does not raise or double up the hooks when they are added more than once" do
       SafeRequestTimeout::Hooks.add_timeout!(TestHooksDuplicate, [:thing])
