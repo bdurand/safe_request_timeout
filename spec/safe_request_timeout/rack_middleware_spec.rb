@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "../spec_helper"
+require "spec_helper"
 
-describe SafeRequestTimeout::RackMiddleware do
+RSpec.describe SafeRequestTimeout::RackMiddleware do
   it "sets up a timeout in the middleware" do
     app = lambda do |env|
       [200, {v: env[:v], remaining: SafeRequestTimeout.time_remaining}, ["OK"]]

@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../spec_helper"
+require "spec_helper"
 
 if defined?(SafeRequestTimeout::Railtie)
   if defined?(ActiveJob)
@@ -16,7 +16,7 @@ if defined?(SafeRequestTimeout::Railtie)
     end
   end
 
-  describe SafeRequestTimeout::Railtie do
+  RSpec.describe SafeRequestTimeout::Railtie do
     it "adds the timeout hooks to ActiveRecord" do
       modules = ActiveRecord::Base.connection_pool.with_connection { |connection| connection.class.included_modules }
       expect(modules.detect { |m| m.name.to_s.end_with?("AddTimeout") }).to_not be_nil

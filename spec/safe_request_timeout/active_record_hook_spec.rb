@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "../spec_helper"
+require "spec_helper"
 
-describe SafeRequestTimeout::ActiveRecordHook do
+RSpec.describe SafeRequestTimeout::ActiveRecordHook do
   it "should add the timeout check" do
     SafeRequestTimeout.timeout(0.1) do
       TestModel.count

@@ -13,6 +13,8 @@ module SafeRequestTimeout
         hooks_module = create_module(klass, module_name, "AddTimeout")
 
         Array(methods).each do |method_name|
+          next if hooks_module.method_defined?(method_name)
+
           hooks_module.class_eval <<~RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(#{splat_args})
               SafeRequestTimeout.check_timeout!
@@ -28,6 +30,8 @@ module SafeRequestTimeout
         hooks_module = create_module(klass, module_name, "ClearTimeout")
 
         Array(methods).each do |method_name|
+          next if hooks_module.method_defined?(method_name)
+
           hooks_module.class_eval <<~RUBY, __FILE__, __LINE__ + 1
             def #{method_name}(#{splat_args})
               result = super(#{splat_args})
