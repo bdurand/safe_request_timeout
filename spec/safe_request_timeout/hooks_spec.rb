@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require_relative "../spec_helper"
+require "spec_helper"
 
 class TestHooks
   def thing_1(arg)
@@ -20,8 +20,26 @@ class TestHooks
   end
 end
 
-describe SafeRequestTimeout::Hooks do
+class TestHooksDuplicate
+  def thing(arg)
+    arg
+  end
+end
+
+RSpec.describe SafeRequestTimeout::Hooks do
   describe "add_timeout!" do
+    it "does not raise or double up the hooks when they are added more than once" do
+      SafeRequestTimeout::Hooks.add_timeout!(TestHooksDuplicate, [:thing])
+      expect { SafeRequestTimeout::Hooks.add_timeout!(TestHooksDuplicate, [:thing]) }.not_to raise_error
+      expect(TestHooksDuplicate.ancestors.count { |mod| mod.name.to_s.end_with?("AddTimeout") }).to eq 1
+
+      object = TestHooksDuplicate.new
+      expect(object.thing(1)).to eq 1
+      SafeRequestTimeout.timeout(0.1) do
+        sleep 0.11
+        expect { object.thing(1) }.to raise_error(SafeRequestTimeout::TimeoutError)
+      end
+    end
     it "should inject timeout checks into specified methods" do
       object = TestHooks.new
       SafeRequestTimeout::Hooks.add_timeout!(TestHooks, [:thing_1, :thing_2, :thing_3])

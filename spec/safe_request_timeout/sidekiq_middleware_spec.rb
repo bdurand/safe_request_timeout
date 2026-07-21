@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require_relative "../spec_helper"
+require "spec_helper"
 
-describe SafeRequestTimeout::SidekiqMiddleware do
+RSpec.describe SafeRequestTimeout::SidekiqMiddleware do
   it "sets up a timeout in the middleware from the safe_request_timeout option" do
     middleware = SafeRequestTimeout::SidekiqMiddleware.new
     job = {"safe_request_timeout" => 5}

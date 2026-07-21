@@ -12,6 +12,8 @@ begin
 rescue LoadError
 end
 
+require "logger" # needed for ActiveRecord 6.x and 7.0
+
 Bundler.require(:default, :test)
 
 require "dotenv/load"
@@ -44,11 +46,11 @@ class TestModel < ActiveRecord::Base
 end
 
 RSpec.configure do |config|
-  config.expect_with :rspec do |c|
-    c.syntax = :expect
-  end
-
+  config.warnings = true
+  config.disable_monkey_patching!
+  config.default_formatter = "doc" if config.files_to_run.one?
   config.order = :random
+  Kernel.srand config.seed
 
   config.around(:each) do |example|
     if example.metadata[:freeze_time]
